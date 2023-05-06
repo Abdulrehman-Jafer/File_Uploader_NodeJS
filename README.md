@@ -1,0 +1,2 @@
+File_Uploader_NodeJS
+This is a very simple pure NodeJS TCP-Application. In this app you can upload any file from the client to the server and that's it. But the way I did it is very basic and very easy to grasp! (at least for me!).
