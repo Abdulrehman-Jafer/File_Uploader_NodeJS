@@ -1,6 +1,6 @@
 const net = require("node:net")
 const fs = require("node:fs/promises")
-const path = require("node:path")
+const path = require("path")
 
 const Host = "::1" //LocalHost Ipv6
 const Port = 5050
@@ -30,7 +30,7 @@ const socket = net.createConnection({host:Host,port:Port},async ()=>{
     let bytesUploaded = 0
 
     const filename = path.basename(filePath)
-    socket.write(filename)
+    socket.write(`----message----${filename}`)
     readStream.on("data",(chunk)=>{
         socket.write(chunk)
         bytesUploaded += chunk.length
@@ -42,8 +42,8 @@ const socket = net.createConnection({host:Host,port:Port},async ()=>{
     })
 
     readStream.on("end",()=>{
-        fileHandle.close()
         socket.end()
+        fileHandle?.close()
         console.log("Finished Uploading!")
     })
 })

@@ -1,41 +1,39 @@
-const net = require("node:net")
-const fs = require("node:fs/promises")
-
-const Host = "::1" //LocalHost Ipv6
-const Port = 5050
-
-const server = net.createServer()
+const net = require("node:net");
+const fs = require("node:fs/promises");
 
 
-server.on("connection",async (socket)=>{
-    console.log("Socket Connected")
-    let i = 0,fileHandle,fileWriteStream
-    socket.on("data",async (chunk)=>{
-        if(i == 0){
-             fileHandle = await fs.open(`./storage/${chunk.toString("utf-8")}`,"w")
-             fileWriteStream = fileHandle.createWriteStream()   
-             return ++i;
-        }
-        else{
-            fileWriteStream.write(chunk)
-            ++i;
-        }
-    })
-    socket.on("end",()=>{
-        socket.end()
-        i=0
-        if(fileHandle){
-            fileHandle.close()
-            console.log("Closed the File and also emitted the socket closing event!")
-        }else{
-            console.log("Closed the socket without doing anything!")
-        }
-    })
+const Host = "::1"; // LocalHost Ipv6
+const Port = 5050;
+
+const server = net.createServer();
+
+server.on("connection", async (socket) => {
+  console.log("Socket Connected");
+  let filename,filehandle,ws;
+  socket.on("data", async (chunk) => {
+    const stringData = chunk.toString("utf-8");
+    if (!filehandle) {
+      socket.pause()
+      filename = stringData.substring(15)
+      filehandle = await fs.open(`${__dirname}/storage/${filename}`,"w")
+      ws = filehandle.createWriteStream() 
+      socket.resume()
+    } else {
+        ws.write(chunk)
+    }
+  });
+  socket.on("end", async () => {
+    if (ws) {
+      ws.end()
+      console.log("Closed the File and also emitted the socket closing event!");
+    } else {
+      console.log("Closed the socket without doing anything!");
+    }
+  });
 });
 
-server.on("error",(err)=>{
-    console.log(`Error: ${err}`) //Handling the error if something goes wrong!
-})
+server.on("error", (err) => {
+  console.log(`Error: ${err}`); // Handling the error if something goes wrong!
+});
 
-server.listen(Port,Host,()=>console.log(`server has starte at ${Host} on port ${Port}.`)
-)
+server.listen(Port, Host, () => console.log(`server has started at ${Host} on port ${Port}.`));
